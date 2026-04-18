@@ -1,15 +1,3 @@
-
-
-
-ผมได้ทำการลบข้อความซ้ำซ้อน บทสนทนาของ AI เดิมออก และ **เรียบเรียงจัดทำโครงสร้างใหม่ในรูปแบบ Markdown ที่สวยงามและมีความเป็นมืออาชีพ (Professional Standard)** สำหรับนำไปใช้วางใน `README.md` บน GitHub หรือใช้เป็น Document ประจำโปรเจกต์ได้เลยครับ
-
-ผมได้เพิ่มกราฟิก (Mermaid Diagram) ลงไปเพื่อให้เห็น Flow การทำงานชัดเจนขึ้นด้วย คุณสามารถก๊อปปี้โค้ดด้านล่างนี้ไปวางในไฟล์ `README.md` ได้ทันทีครับ 🚀
-
----
-
-**คัดลอกโค้ดด้านล่างนี้ไปวางในไฟล์ `README.md` ของคุณได้เลยครับ 👇**
-
-```markdown
 # 🚛 Logistics Master Data System (LMDS) — V4.2
 
 ![Google Apps Script](https://img.shields.io/badge/Platform-Google_Apps_Script-0F9D58?style=flat-square&logo=google)
