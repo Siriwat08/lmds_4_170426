@@ -163,58 +163,6 @@ function safeJsonParse(str) {
 }
 
 
-function checkUnusedFunctions() {
-  var ui = SpreadsheetApp.getUi();
-  
-  var funcs = [
-    'calculateSimilarity',
-    'editDistance', 
-    'cleanPhoneNumber',
-    'parseThaiDate',
-    'chunkArray'
-  ];
-  
-  console.log("=== ตรวจสอบฟังก์ชันที่ไม่ได้ใช้ ===");
-  funcs.forEach(function(name) {
-    var exists = typeof eval(name) === 'function';
-    console.log(name + ": " + (exists ? "✅ มีอยู่" : "❌ ไม่พบ"));
-  });
-  
-  console.log("\nถ้าทุกตัวแสดง ✅ มีอยู่ แสดงว่าพร้อมลบได้ครับ");
-}
-
-function verifyFunctionsRemoved() {
-  var funcs = [
-    'calculateSimilarity',
-    'editDistance',
-    'cleanPhoneNumber', 
-    'parseThaiDate',
-    'chunkArray'
-  ];
-  
-  var allRemoved = true;
-  
-  funcs.forEach(function(name) {
-    try {
-      var result = eval('typeof ' + name);
-      if (result === 'function') {
-        console.log("⚠️ " + name + " ยังอยู่ → ลบไม่สำเร็จ");
-        allRemoved = false;
-      } else {
-        console.log("✅ " + name + " ลบออกแล้ว");
-      }
-    } catch(e) {
-      console.log("✅ " + name + " ลบออกแล้ว");
-    }
-  });
-  
-  if (allRemoved) {
-    console.log("\n✅ ลบครบทุกฟังก์ชันแล้วครับ");
-  } else {
-    console.log("\n⚠️ ยังมีฟังก์ชันที่ลบไม่สำเร็จ ตรวจสอบอีกครั้งครับ");
-  }
-}
-
 // ====================================================
 // [Phase B NEW] Row Adapter Helpers
 // แปลง raw array ↔ object เพื่อลด magic number
