@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📋 ระบบตรวจสอบข้อมูล - Pending Review Queue</title>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- Material Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      
+      body {
+        font-family: 'Sarabun', sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        padding: 20px;
+      }
+      
+      .container {
+        max-width: 1400px;
+        margin: 0 auto;
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        overflow: hidden;
+      }
+      
+      .header {
+        background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+        color: white;
+        padding: 30px;
+        text-align: center;
+      }
+      
+      .header h1 {
+        font-size: 28px;
+        font-weight: 600;
+        margin-bottom: 10px;
+      }
+      
+      .header p {
+        font-size: 14px;
+        opacity: 0.9;
+      }
+      
+      .stats-bar {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+        padding: 20px 30px;
+        background: #f8f9fa;
+        border-bottom: 1px solid #e9ecef;
+      }
+      
+      .stat-card {
+        background: white;
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        text-align: center;
+      }
+      
+      .stat-number {
+        font-size: 32px;
+        font-weight: 700;
+        color: #3498db;
+      }
+      
+      .stat-label {
+        font-size: 13px;
+        color: #7f8c8d;
+        margin-top: 5px;
+      }
+      
+      .content {
+        padding: 30px;
+      }
+      
+      .toolbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+        gap: 15px;
+      }
+      
+      .filter-group {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+      }
+      
+      select, button {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 8px;
+        font-family: 'Sarabun', sans-serif;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.3s;
+      }
+      
+      select {
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+      }
+      
+      button.primary {
+        background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+        color: white;
+        font-weight: 500;
+      }
+      
+      button.success {
+        background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+        color: white;
+        font-weight: 500;
+      }
+      
+      button.danger {
+        background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+        color: white;
+        font-weight: 500;
+      }
+      
+      button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      }
+      
+      button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+      }
+      
+      .review-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(450px, 1fr));
+        gap: 20px;
+      }
+      
+      .review-card {
+        background: white;
+        border: 2px solid #e9ecef;
+        border-radius: 12px;
+        padding: 20px;
+        transition: all 0.3s;
+      }
+      
+      .review-card:hover {
+        border-color: #3498db;
+        box-shadow: 0 4px 20px rgba(52, 152, 219, 0.2);
+      }
+      
+      .review-card.priority-high {
+        border-left: 4px solid #e74c3c;
+      }
+      
+      .review-card.priority-medium {
+        border-left: 4px solid #f39c12;
+      }
+      
+      .review-card.priority-low {
+        border-left: 4px solid #2ecc71;
+      }
+      
+      .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid #e9ecef;
+      }
+      
+      .badge {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+      }
+      
+      .badge-person {
+        background: #e3f2fd;
+        color: #1976d2;
+      }
+      
+      .badge-location {
+        background: #e8f5e9;
+        color: #388e3c;
+      }
+      
+      .badge-both {
+        background: #fff3e0;
+        color: #f57c00;
+      }
+      
+      .confidence-meter {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 15px;
+      }
+      
+      .meter-bar {
+        flex: 1;
+        height: 8px;
+        background: #e9ecef;
+        border-radius: 4px;
+        overflow: hidden;
+      }
+      
+      .meter-fill {
+        height: 100%;
+        border-radius: 4px;
+        transition: width 0.5s;
+      }
+      
+      .meter-fill.high {
+        background: linear-gradient(90deg, #2ecc71, #27ae60);
+      }
+      
+      .meter-fill.medium {
+        background: linear-gradient(90deg, #f39c12, #e67e22);
+      }
+      
+      .meter-fill.low {
+        background: linear-gradient(90deg, #e74c3c, #c0392b);
+      }
+      
+      .info-row {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 10px;
+        font-size: 14px;
+      }
+      
+      .info-label {
+        font-weight: 500;
+        color: #7f8c8d;
+        min-width: 100px;
+      }
+      
+      .info-value {
+        color: #2c3e50;
+      }
+      
+      .candidates-section {
+        margin-top: 15px;
+        padding: 15px;
+        background: #f8f9fa;
+        border-radius: 8px;
+      }
+      
+      .candidate-item {
+        padding: 10px;
+        background: white;
+        border-radius: 6px;
+        margin-bottom: 10px;
+        border: 1px solid #dee2e6;
+      }
+      
+      .candidate-item:last-child {
+        margin-bottom: 0;
+      }
+      
+      .action-buttons {
+        display: flex;
+        gap: 10px;
+        margin-top: 20px;
+        padding-top: 15px;
+        border-top: 1px solid #e9ecef;
+      }
+      
+      .action-buttons button {
+        flex: 1;
+        padding: 12px;
+        font-weight: 600;
+      }
+      
+      .loading {
+        text-align: center;
+        padding: 60px 20px;
+        color: #7f8c8d;
+      }
+      
+      .spinner {
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #3498db;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 20px;
+      }
+      
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+      
+      .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: #7f8c8d;
+      }
+      
+      .empty-state i {
+        font-size: 80px;
+        margin-bottom: 20px;
+        opacity: 0.5;
+      }
+      
+      .map-preview {
+        width: 100%;
+        height: 200px;
+        background: #e9ecef;
+        border-radius: 8px;
+        margin-top: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #7f8c8d;
+        font-size: 14px;
+      }
+      
+      .toast {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        background: #2c3e50;
+        color: white;
+        padding: 15px 25px;
+        border-radius: 8px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        z-index: 1000;
+        animation: slideIn 0.3s;
+      }
+      
+      @keyframes slideIn {
+        from {
+          transform: translateX(100%);
+          opacity: 0;
+        }
+        to {
+          transform: translateX(0);
+          opacity: 1;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>📋 ระบบตรวจสอบข้อมูล - Pending Review Queue</h1>
+        <p>ตรวจสอบและอนุมัติข้อมูลที่ระบบไม่มั่นใจก่อนบันทึกลงฐานข้อมูล</p>
+      </div>
+      
+      <div class="stats-bar" id="statsBar">
+        <div class="stat-card">
+          <div class="stat-number" id="statPending">-</div>
+          <div class="stat-label">รอตรวจสอบ</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="statApproved">-</div>
+          <div class="stat-label">อนุมัติแล้ว (วันนี้)</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="statRejected">-</div>
+          <div class="stat-label">ปฏิเสธ (วันนี้)</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="statAvgConfidence">-</div>
+          <div class="stat-label">ความมั่นใจเฉลี่ย</div>
+        </div>
+      </div>
+      
+      <div class="content">
+        <div class="toolbar">
+          <div class="filter-group">
+            <label>กรองตามประเภท:</label>
+            <select id="filterType" onchange="loadReviews()">
+              <option value="all">ทั้งหมด</option>
+              <option value="Person">บุคคล</option>
+              <option value="Location">สถานที่</option>
+              <option value="Both">ทั้งสองอย่าง</option>
+            </select>
+            
+            <label>สถานะ:</label>
+            <select id="filterStatus" onchange="loadReviews()">
+              <option value="Pending">รอตรวจสอบ</option>
+              <option value="Approved">อนุมัติแล้ว</option>
+              <option value="Rejected">ปฏิเสธแล้ว</option>
+              <option value="all">ทั้งหมด</option>
+            </select>
+          </div>
+          
+          <div class="filter-group">
+            <button class="primary" onclick="loadReviews()">
+              <i class="material-icons" style="vertical-align: middle; font-size: 18px;">refresh</i>
+              รีเฟรช
+            </button>
+            <button class="success" onclick="bulkApprove()">
+              <i class="material-icons" style="vertical-align: middle; font-size: 18px;">done_all</i>
+              อนุมัติทั้งหมดที่เลือก
+            </button>
+          </div>
+        </div>
+        
+        <div id="reviewGrid" class="review-grid">
+          <div class="loading">
+            <div class="spinner"></div>
+            <p>กำลังโหลดข้อมูล...</p>
+          </div>
+        </div>
+        
+        <div id="emptyState" class="empty-state" style="display: none;">
+          <i class="material-icons">check_circle_outline</i>
+          <h3>ไม่มีรายการที่ต้องตรวจสอบ</h3>
+          <p>คุณได้ตรวจสอบรายการทั้งหมดแล้ว</p>
+        </div>
+      </div>
+    </div>
+    
+    <script>
+      // Global state
+      let reviews = [];
+      let selectedReviews = new Set();
+      
+      // Load reviews on page load
+      window.onload = function() {
+        loadReviews();
+        setInterval(loadStats, 30000); // Refresh stats every 30 seconds
+      };
+      
+      // Load reviews from server
+      function loadReviews() {
+        const filterType = document.getElementById('filterType').value;
+        const filterStatus = document.getElementById('filterStatus').value;
+        
+        document.getElementById('reviewGrid').innerHTML = `
+          <div class="loading">
+            <div class="spinner"></div>
+            <p>กำลังโหลดข้อมูล...</p>
+          </div>
+        `;
+        
+        google.script.run
+          .withSuccessHandler(renderReviews)
+          .withFailureHandler(handleError)
+          .getPendingReviews(filterType, filterStatus);
+      }
+      
+      // Render reviews to grid
+      function renderReviews(data) {
+        reviews = data || [];
+        const grid = document.getElementById('reviewGrid');
+        const emptyState = document.getElementById('emptyState');
+        
+        if (reviews.length === 0) {
+          grid.style.display = 'none';
+          emptyState.style.display = 'block';
+          return;
+        }
+        
+        grid.style.display = 'grid';
+        emptyState.style.display = 'none';
+        
+        let html = '';
+        reviews.forEach(review => {
+          const priorityClass = getPriorityClass(review.confidence);
+          const badgeClass = getBadgeClass(review.type);
+          
+          html += `
+            <div class="review-card ${priorityClass}" id="card-${review.reviewId}">
+              <div class="card-header">
+                <div>
+                  <span class="badge ${badgeClass}">${translateType(review.type)}</span>
+                  <span style="margin-left: 10px; font-size: 12px; color: #7f8c8d;">
+                    ${formatDate(review.timestamp)}
+                  </span>
+                </div>
+                <div style="font-weight: 600; color: ${getConfidenceColor(review.confidence)}">
+                  ${review.confidence}% มั่นใจ
+                </div>
+              </div>
+              
+              <div class="confidence-meter">
+                <div class="meter-bar">
+                  <div class="meter-fill ${getMeterClass(review.confidence)}" 
+                       style="width: ${review.confidence}%"></div>
+                </div>
+                <span style="font-size: 12px; font-weight: 600;">${review.confidence}%</span>
+              </div>
+              
+              <div class="info-row">
+                <div class="info-label">ชื่อ Input:</div>
+                <div class="info-value">${review.inputName || '-'}</div>
+              </div>
+              
+              <div class="info-row">
+                <div class="info-label">พิกัด:</div>
+                <div class="info-value">
+                  ${review.inputLat && review.inputLng ? 
+                    `${review.inputLat}, ${review.inputLng}` : '-'}
+                </div>
+              </div>
+              
+              <div class="info-row">
+                <div class="info-label">คำแนะนำ:</div>
+                <div class="info-value">${review.suggestedAction || '-'}</div>
+              </div>
+              
+              ${review.candidates && review.candidates.length > 0 ? `
+                <div class="candidates-section">
+                  <strong>ตัวเลือกที่ระบบเสนอ:</strong>
+                  ${review.candidates.map((candidate, idx) => `
+                    <div class="candidate-item">
+                      <div style="font-weight: 600; margin-bottom: 5px;">
+                        ตัวเลือก #${idx + 1}
+                      </div>
+                      <div style="font-size: 13px;">
+                        ${candidate.nameStd || candidate.representativeName || '-'}
+                      </div>
+                      ${candidate.distanceMeters ? `
+                        <div style="font-size: 12px; color: #7f8c8d; margin-top: 3px;">
+                          ห่าง: ${candidate.distanceMeters} เมตร
+                        </div>
+                      ` : ''}
+                      ${candidate.matchScore ? `
+                        <div style="font-size: 12px; color: #7f8c8d; margin-top: 3px;">
+                          ความคล้าย: ${candidate.matchScore}%
+                        </div>
+                      ` : ''}
+                    </div>
+                  `).join('')}
+                </div>
+              ` : ''}
+              
+              <div class="action-buttons">
+                <button class="success" onclick="approveReview('${review.reviewId}')">
+                  <i class="material-icons" style="vertical-align: middle; font-size: 16px;">check</i>
+                  อนุมัติ
+                </button>
+                <button class="danger" onclick="rejectReview('${review.reviewId}')">
+                  <i class="material-icons" style="vertical-align: middle; font-size: 16px;">close</i>
+                  ปฏิเสธ
+                </button>
+              </div>
+            </div>
+          `;
+        });
+        
+        grid.innerHTML = html;
+        loadStats();
+      }
+      
+      // Load statistics
+      function loadStats() {
+        google.script.run
+          .withSuccessHandler(renderStats)
+          .withFailureHandler(console.error)
+          .getReviewStats();
+      }
+      
+      // Render statistics
+      function renderStats(stats) {
+        if (!stats) return;
+        
+        document.getElementById('statPending').textContent = stats.pending || 0;
+        document.getElementById('statApproved').textContent = stats.approvedToday || 0;
+        document.getElementById('statRejected').textContent = stats.rejectedToday || 0;
+        document.getElementById('statAvgConfidence').textContent = (stats.avgConfidence || 0) + '%';
+      }
+      
+      // Approve single review
+      function approveReview(reviewId) {
+        if (!confirm('คุณต้องการอนุมัติรายการนี้ใช่ไหม?')) return;
+        
+        google.script.run
+          .withSuccessHandler(() => {
+            showToast('✅ อนุมัติสำเร็จ');
+            loadReviews();
+          })
+          .withFailureHandler(handleError)
+          .decideReview(reviewId, 'Approved');
+      }
+      
+      // Reject single review
+      function rejectReview(reviewId) {
+        if (!confirm('คุณต้องการปฏิเสธรายการนี้ใช่ไหม?')) return;
+        
+        google.script.run
+          .withSuccessHandler(() => {
+            showToast('❌ ปฏิเสธสำเร็จ');
+            loadReviews();
+          })
+          .withFailureHandler(handleError)
+          .decideReview(reviewId, 'Rejected');
+      }
+      
+      // Bulk approve
+      function bulkApprove() {
+        const pendingCount = reviews.filter(r => r.status === 'Pending').length;
+        if (pendingCount === 0) {
+          showToast('⚠️ ไม่มีรายการรอตรวจสอบ');
+          return;
+        }
+        
+        if (!confirm(`คุณต้องการอนุมัติ ${pendingCount} รายการใช่ไหม?`)) return;
+        
+        const pendingIds = reviews
+          .filter(r => r.status === 'Pending')
+          .map(r => r.reviewId);
+        
+        google.script.run
+          .withSuccessHandler(() => {
+            showToast(`✅ อนุมัติ ${pendingCount} รายการสำเร็จ`);
+            loadReviews();
+          })
+          .withFailureHandler(handleError)
+          .bulkDecideReviews(pendingIds, 'Approved');
+      }
+      
+      // Helper functions
+      function getPriorityClass(confidence) {
+        if (confidence >= 90) return 'priority-low';
+        if (confidence >= 75) return 'priority-medium';
+        return 'priority-high';
+      }
+      
+      function getBadgeClass(type) {
+        if (type === 'Person') return 'badge-person';
+        if (type === 'Location') return 'badge-location';
+        return 'badge-both';
+      }
+      
+      function getMeterClass(confidence) {
+        if (confidence >= 90) return 'high';
+        if (confidence >= 75) return 'medium';
+        return 'low';
+      }
+      
+      function getConfidenceColor(confidence) {
+        if (confidence >= 90) return '#27ae60';
+        if (confidence >= 75) return '#f39c12';
+        return '#e74c3c';
+      }
+      
+      function translateType(type) {
+        if (type === 'Person') return 'บุคคล';
+        if (type === 'Location') return 'สถานที่';
+        return 'ทั้งสองอย่าง';
+      }
+      
+      function formatDate(dateStr) {
+        if (!dateStr) return '-';
+        const date = new Date(dateStr);
+        return date.toLocaleString('th-TH', {
+          day: '2-digit',
+          month: 'short',
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+      }
+      
+      function handleError(error) {
+        console.error('Error:', error);
+        showToast('❌ เกิดข้อผิดพลาด: ' + error.message);
+      }
+      
+      function showToast(message) {
+        const toast = document.createElement('div');
+        toast.className = 'toast';
+        toast.textContent = message;
+        document.body.appendChild(toast);
+        
+        setTimeout(() => {
+          toast.remove();
+        }, 3000);
+      }
+    </script>
+  </body>
+</html>
